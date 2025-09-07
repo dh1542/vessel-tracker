@@ -28,3 +28,16 @@
             |  - Polls /api/vessels |
             |  - params: bbox       |
             +-----------------------+
+
+
+# How to deploy
+# Create namespace
+kubectl apply -f deployment/namespace.yaml
+
+# Install PostgreSQL with Helm
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
+helm install postgres bitnami/postgresql \
+  -n postgres \
+  -f databases/postgres/postgres-values.yaml
