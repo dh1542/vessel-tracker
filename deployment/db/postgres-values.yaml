@@ -1,0 +1,10 @@
+global:
+  postgresql:
+    postgresPassword: "admin"
+    username: "admin"
+    password: "admin"
+    database: "vesselStore"
+primary:
+  persistence:
+    enabled: true
+    size: 3Gi
