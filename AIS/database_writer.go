@@ -19,7 +19,7 @@ func main() {
 	db := connectToDB()
 	setUpDBTables(db)
 
-	fmt.Println("Database connected successfully")\
+	fmt.Println("Database connected successfully")
 
 }
 
@@ -49,15 +49,14 @@ func setUpDBTables(db *sql.DB) {
 		ship_name VARCHAR(255),
 		latitude DOUBLE PRECISION,
 		longitude DOUBLE PRECISION,
-		timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
-	);
-	
-	res, err = db.Exec(createTableQuery)
+		timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	)`
+
+	_, err = db.Exec(createTableQuery)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Table created or already exists:", res)
+	fmt.Println("Table created or already exists")
 
-	
 }
