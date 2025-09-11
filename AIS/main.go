@@ -1,6 +1,7 @@
 package main
 
 import (
+	"aisstream/db"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -16,7 +17,6 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	fmt.Println(os.Getenv("AIS_STREAM_URL"))
 	defer func() {
 		os.Unsetenv("DB_HOST")
 		os.Unsetenv("DB_PORT")
@@ -28,6 +28,9 @@ func main() {
 		os.Unsetenv("API_KEY")
 		log.Println("Environment variables cleared")
 	}()
+
+	postgresDataBase := db.InitDB()
+	fmt.Println(postgresDataBase)
 
 	url := os.Getenv("AIS_STREAM_URL")
 
