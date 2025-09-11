@@ -17,18 +17,6 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	defer func() {
-		os.Unsetenv("DB_HOST")
-		os.Unsetenv("DB_PORT")
-		os.Unsetenv("DB_USER")
-		os.Unsetenv("DB_PASSWORD")
-		os.Unsetenv("DB_NAME")
-		os.Unsetenv("DB_SSLMODE")
-		os.Unsetenv("AIS_STREAM_URL")
-		os.Unsetenv("API_KEY")
-		log.Println("Environment variables cleared")
-	}()
-
 	postgresDataBase := db.InitDB()
 	fmt.Println(postgresDataBase)
 
