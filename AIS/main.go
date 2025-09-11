@@ -4,13 +4,32 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	aisstream "github.com/aisstream/ais-message-models/golang/aisStream"
 	"github.com/gorilla/websocket"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	url := "wss://stream.aisstream.io/v0/stream"
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	fmt.Println(os.Getenv("AIS_STREAM_URL"))
+	defer func() {
+		os.Unsetenv("DB_HOST")
+		os.Unsetenv("DB_PORT")
+		os.Unsetenv("DB_USER")
+		os.Unsetenv("DB_PASSWORD")
+		os.Unsetenv("DB_NAME")
+		os.Unsetenv("DB_SSLMODE")
+		os.Unsetenv("AIS_STREAM_URL")
+		os.Unsetenv("API_KEY")
+		log.Println("Environment variables cleared")
+	}()
+
+	url := os.Getenv("AIS_STREAM_URL")
 
 	// websocket
 	ws, _, err := websocket.DefaultDialer.Dial(url, nil)
@@ -20,8 +39,8 @@ func main() {
 	defer ws.Close()
 
 	subscriptionMessage := aisstream.SubscriptionMessage{
-		APIKey:        "",
-		BoundingBoxes: [][][]float64{{{-90.0, -180.0}, {90.0, 180.0}}}, // bounding box for the entire world
+		APIKey:        os.Getenv("AIS_STREAM_API_KEY"),
+		BoundingBoxes: [][][]float64{{{54.901184, 10.883331}, {55.463490, 11.057739}}}, // worl
 	}
 
 	subMsgBytes, _ := json.Marshal(subscriptionMessage)
@@ -54,6 +73,12 @@ func main() {
 			fmt.Printf("MMSI: %d Ship Name: %s Latitude: %f Longitude: %f\n",
 				positionReport.UserID, shipName, positionReport.Latitude, positionReport.Longitude)
 		}
+		// case aisstream.Standard_Class_B_Position_Report:
+		// 	var classBPositionReport aisstream.StandardClassBPositionReport
+		// 	classBPositionReport = *packet.Message.StandardClassBPositionReport
+		// 	fmt.Printf("MMSI: %d Ship Name: %s Latitude: %f Longitude: %f\n",
+		// 		classBPositionReport.UserID, shipName, classBPositionReport.Latitude, classBPositionReport.Longitude)
+		// }
 
 	}
 
