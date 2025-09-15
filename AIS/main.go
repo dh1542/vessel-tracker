@@ -2,6 +2,9 @@ package main
 
 import (
 	"aisstream/db"
+	"aisstream/db/generated"
+	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -16,9 +19,8 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
+	ctx := context.Background()
 	postgresDataBase := db.InitDB()
-	fmt.Println(postgresDataBase)
 
 	url := os.Getenv("AIS_STREAM_URL")
 
@@ -61,7 +63,18 @@ func main() {
 		case aisstream.POSITION_REPORT:
 			var positionReport aisstream.PositionReport
 			positionReport = *packet.Message.PositionReport
-			db.CreateShip(int64(positionReport.UserID), shipName, postgresDataBase)
+			shipArgs := generated.CreateShipParams{
+				Mmsi: int64(positionReport.UserID),
+				ShipName: sql.NullString{
+					String: shipName,
+					Valid:  true,
+				},
+			}
+			err := postgresDataBase.CreateShip(ctx, shipArgs)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
 			fmt.Printf("MMSI: %d Ship Name: %s Latitude: %f Longitude: %f\n",
 				positionReport.UserID, shipName, positionReport.Latitude, positionReport.Longitude)
 		}
