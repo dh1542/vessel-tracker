@@ -8,19 +8,10 @@ import (
 	aisstream "github.com/aisstream/ais-message-models/golang/aisStream"
 )
 
-func BuildCreateShipParams(mmsi int64, shipName string) generated.CreateShipParams {
-	return generated.CreateShipParams{
-		Mmsi: mmsi,
-		ShipName: sql.NullString{
-			String: shipName,
-			Valid:  shipName != "",
-		},
-	}
-}
-
-func BuildUpsertPositionEntryParams(report aisstream.PositionReport) generated.UpsertPositionEntryParams {
+func BuildUpsertPositionEntryParams(shipName string, report aisstream.PositionReport) generated.UpsertPositionEntryParams {
 	return generated.UpsertPositionEntryParams{
 		Mmsi:                      int64(report.UserID),
+		ShipName:                  sql.NullString{String: shipName, Valid: true},
 		Latitude:                  sql.NullFloat64{Float64: report.Latitude, Valid: true},
 		Longitude:                 sql.NullFloat64{Float64: report.Longitude, Valid: true},
 		Cog:                       sql.NullInt32{Int32: int32(report.Cog), Valid: true},
@@ -35,5 +26,14 @@ func BuildUpsertPositionEntryParams(report aisstream.PositionReport) generated.U
 		MessageID:                 sql.NullInt32{Int32: int32(report.MessageID), Valid: true},
 		Valid:                     sql.NullBool{Bool: true, Valid: true},
 		TimeUtc:                   sql.NullTime{Time: util.TimeFromInt32(report.Timestamp), Valid: true},
+	}
+}
+
+func BuildGetPositionDataParams(minLatitude, minLongitude, maxLongitude, maxLatitude float64) generated.GetPositionDataParams {
+	return generated.GetPositionDataParams{
+		Latitude:    sql.NullFloat64{Float64: minLatitude, Valid: true},
+		Latitude_2:  sql.NullFloat64{Float64: maxLatitude, Valid: true},
+		Longitude:   sql.NullFloat64{Float64: minLongitude, Valid: true},
+		Longitude_2: sql.NullFloat64{Float64: maxLongitude, Valid: true},
 	}
 }

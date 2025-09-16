@@ -1,10 +1,7 @@
-CREATE TABLE ships (
-     mmsi BIGINT PRIMARY KEY,
-     ship_name VARCHAR(255)
-);
 
 CREATE TABLE position_reports (
-    mmsi BIGINT PRIMARY KEY REFERENCES ships(mmsi) ON DELETE CASCADE,
+    mmsi BIGINT PRIMARY KEY,
+    ship_name VARCHAR,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
     cog INTEGER,

@@ -1,12 +1,7 @@
--- name: CreateShipTableIfNotExist :exec
-CREATE TABLE IF NOT EXISTS ships  (
-                       mmsi BIGINT PRIMARY KEY,
-                       ship_name VARCHAR(255)
-);
-
 -- name: CreatePositionReportTableIfNotExist :exec
 CREATE TABLE IF NOT EXISTS position_reports (
-                                  mmsi BIGINT PRIMARY KEY REFERENCES ships(mmsi) ON DELETE CASCADE,
+                                  mmsi BIGINT PRIMARY KEY,
+                                    ship_name VARCHAR(255),
                                   latitude DOUBLE PRECISION,
                                   longitude DOUBLE PRECISION,
                                   cog INTEGER,
@@ -23,17 +18,6 @@ CREATE TABLE IF NOT EXISTS position_reports (
                                   time_utc TIMESTAMP
 );
 
-
--- name: CreateShip :exec
-INSERT INTO ships (mmsi, ship_name)
-VALUES ($1, $2)
-ON CONFLICT (mmsi) DO NOTHING;
-
--- name: GetShip :one
-SELECT mmsi, ship_name
-FROM ships
-WHERE MMSI = $1;
-
 -- name: EmptyDBTables :exec
 TRUNCATE TABLE position_reports
 RESTART IDENTITY CASCADE;
@@ -41,6 +25,7 @@ RESTART IDENTITY CASCADE;
 -- name: UpsertPositionEntry :exec
 INSERT INTO position_reports (
     mmsi,
+    ship_name,
     latitude,
     longitude,
     cog,
@@ -57,8 +42,8 @@ INSERT INTO position_reports (
     time_utc
 )
 VALUES (
-           $1,  -- id
-           $2,  -- mmsi
+           $1,  -- mmsi
+           $2,  -- ship_name
            $3,  -- latitude
            $4,  -- longitude
            $5,  -- cog
@@ -71,10 +56,12 @@ VALUES (
            $12, -- special_manoeuvre_indicator
            $13, -- repeat_indicator
            $14, -- message_id
-           $15 -- valid
+           $15, --valid
+            $16 --timeUtc
        )
 ON CONFLICT (mmsi) DO UPDATE
     SET
+        ship_name = EXCLUDED.ship_name,
         latitude = EXCLUDED.latitude,
         longitude = EXCLUDED.longitude,
         cog = EXCLUDED.cog,
@@ -89,3 +76,10 @@ ON CONFLICT (mmsi) DO UPDATE
         message_id = EXCLUDED.message_id,
         valid = EXCLUDED.valid,
         time_utc = EXCLUDED.time_utc;
+
+-- name: GetPositionData :many
+SELECT *
+FROM position_reports
+WHERE latitude  BETWEEN $1 AND $2 --minLat --maxLat
+AND longitude BETWEEN $3 AND $4; --minLon --maxLon
+

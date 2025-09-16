@@ -12,7 +12,8 @@ import (
 
 const createPositionReportTableIfNotExist = `-- name: CreatePositionReportTableIfNotExist :exec
 CREATE TABLE IF NOT EXISTS position_reports (
-                                  mmsi BIGINT PRIMARY KEY REFERENCES ships(mmsi) ON DELETE CASCADE,
+                                  mmsi BIGINT PRIMARY KEY,
+                                    ship_name VARCHAR(255),
                                   latitude DOUBLE PRECISION,
                                   longitude DOUBLE PRECISION,
                                   cog INTEGER,
@@ -35,34 +36,6 @@ func (q *Queries) CreatePositionReportTableIfNotExist(ctx context.Context) error
 	return err
 }
 
-const createShip = `-- name: CreateShip :exec
-INSERT INTO ships (mmsi, ship_name)
-VALUES ($1, $2)
-ON CONFLICT (mmsi) DO NOTHING
-`
-
-type CreateShipParams struct {
-	Mmsi     int64
-	ShipName sql.NullString
-}
-
-func (q *Queries) CreateShip(ctx context.Context, arg CreateShipParams) error {
-	_, err := q.db.ExecContext(ctx, createShip, arg.Mmsi, arg.ShipName)
-	return err
-}
-
-const createShipTableIfNotExist = `-- name: CreateShipTableIfNotExist :exec
-CREATE TABLE IF NOT EXISTS ships  (
-                       mmsi BIGINT PRIMARY KEY,
-                       ship_name VARCHAR(255)
-)
-`
-
-func (q *Queries) CreateShipTableIfNotExist(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, createShipTableIfNotExist)
-	return err
-}
-
 const emptyDBTables = `-- name: EmptyDBTables :exec
 TRUNCATE TABLE position_reports
 RESTART IDENTITY CASCADE
@@ -73,22 +46,69 @@ func (q *Queries) EmptyDBTables(ctx context.Context) error {
 	return err
 }
 
-const getShip = `-- name: GetShip :one
-SELECT mmsi, ship_name
-FROM ships
-WHERE MMSI = $1
+const getPositionData = `-- name: GetPositionData :many
+SELECT mmsi, ship_name, latitude, longitude, cog, sog, true_heading, navigational_status, position_accuracy, communication_state, rate_of_turn, special_manoeuvre_indicator, repeat_indicator, message_id, valid, time_utc
+FROM position_reports
+WHERE latitude  BETWEEN $1 AND $2 --minLat --maxLat
+AND longitude BETWEEN $3 AND $4
 `
 
-func (q *Queries) GetShip(ctx context.Context, mmsi int64) (Ship, error) {
-	row := q.db.QueryRowContext(ctx, getShip, mmsi)
-	var i Ship
-	err := row.Scan(&i.Mmsi, &i.ShipName)
-	return i, err
+type GetPositionDataParams struct {
+	Latitude    sql.NullFloat64
+	Latitude_2  sql.NullFloat64
+	Longitude   sql.NullFloat64
+	Longitude_2 sql.NullFloat64
+}
+
+func (q *Queries) GetPositionData(ctx context.Context, arg GetPositionDataParams) ([]PositionReport, error) {
+	rows, err := q.db.QueryContext(ctx, getPositionData,
+		arg.Latitude,
+		arg.Latitude_2,
+		arg.Longitude,
+		arg.Longitude_2,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []PositionReport
+	for rows.Next() {
+		var i PositionReport
+		if err := rows.Scan(
+			&i.Mmsi,
+			&i.ShipName,
+			&i.Latitude,
+			&i.Longitude,
+			&i.Cog,
+			&i.Sog,
+			&i.TrueHeading,
+			&i.NavigationalStatus,
+			&i.PositionAccuracy,
+			&i.CommunicationState,
+			&i.RateOfTurn,
+			&i.SpecialManoeuvreIndicator,
+			&i.RepeatIndicator,
+			&i.MessageID,
+			&i.Valid,
+			&i.TimeUtc,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const upsertPositionEntry = `-- name: UpsertPositionEntry :exec
 INSERT INTO position_reports (
     mmsi,
+    ship_name,
     latitude,
     longitude,
     cog,
@@ -105,8 +125,8 @@ INSERT INTO position_reports (
     time_utc
 )
 VALUES (
-           $1,  -- id
-           $2,  -- mmsi
+           $1,  -- mmsi
+           $2,  -- ship_name
            $3,  -- latitude
            $4,  -- longitude
            $5,  -- cog
@@ -119,10 +139,12 @@ VALUES (
            $12, -- special_manoeuvre_indicator
            $13, -- repeat_indicator
            $14, -- message_id
-           $15 -- valid
+           $15, --valid
+            $16 --timeUtc
        )
 ON CONFLICT (mmsi) DO UPDATE
     SET
+        ship_name = EXCLUDED.ship_name,
         latitude = EXCLUDED.latitude,
         longitude = EXCLUDED.longitude,
         cog = EXCLUDED.cog,
@@ -141,6 +163,7 @@ ON CONFLICT (mmsi) DO UPDATE
 
 type UpsertPositionEntryParams struct {
 	Mmsi                      int64
+	ShipName                  sql.NullString
 	Latitude                  sql.NullFloat64
 	Longitude                 sql.NullFloat64
 	Cog                       sql.NullInt32
@@ -160,6 +183,7 @@ type UpsertPositionEntryParams struct {
 func (q *Queries) UpsertPositionEntry(ctx context.Context, arg UpsertPositionEntryParams) error {
 	_, err := q.db.ExecContext(ctx, upsertPositionEntry,
 		arg.Mmsi,
+		arg.ShipName,
 		arg.Latitude,
 		arg.Longitude,
 		arg.Cog,

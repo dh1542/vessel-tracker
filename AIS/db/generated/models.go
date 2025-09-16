@@ -10,6 +10,7 @@ import (
 
 type PositionReport struct {
 	Mmsi                      int64
+	ShipName                  sql.NullString
 	Latitude                  sql.NullFloat64
 	Longitude                 sql.NullFloat64
 	Cog                       sql.NullInt32
@@ -24,9 +25,4 @@ type PositionReport struct {
 	MessageID                 sql.NullInt32
 	Valid                     sql.NullBool
 	TimeUtc                   sql.NullTime
-}
-
-type Ship struct {
-	Mmsi     int64
-	ShipName sql.NullString
 }
