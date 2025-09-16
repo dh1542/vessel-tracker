@@ -10,9 +10,35 @@ import (
 	"database/sql"
 )
 
+const createPositionReportTableIfNotExist = `-- name: CreatePositionReportTableIfNotExist :exec
+CREATE TABLE IF NOT EXISTS position_reports (
+                                  mmsi BIGINT PRIMARY KEY REFERENCES ships(mmsi) ON DELETE CASCADE,
+                                  latitude DOUBLE PRECISION,
+                                  longitude DOUBLE PRECISION,
+                                  cog INTEGER,
+                                  sog INTEGER,
+                                  true_heading INTEGER,
+                                  navigational_status INTEGER,
+                                  position_accuracy BOOLEAN,
+                                  communication_state BIGINT,
+                                  rate_of_turn INTEGER,
+                                  special_manoeuvre_indicator INTEGER,
+                                  repeat_indicator INTEGER,
+                                  message_id INTEGER,
+                                  valid BOOLEAN,
+                                  time_utc TIMESTAMP
+)
+`
+
+func (q *Queries) CreatePositionReportTableIfNotExist(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, createPositionReportTableIfNotExist)
+	return err
+}
+
 const createShip = `-- name: CreateShip :exec
 INSERT INTO ships (mmsi, ship_name)
 VALUES ($1, $2)
+ON CONFLICT (mmsi) DO NOTHING
 `
 
 type CreateShipParams struct {
@@ -22,6 +48,18 @@ type CreateShipParams struct {
 
 func (q *Queries) CreateShip(ctx context.Context, arg CreateShipParams) error {
 	_, err := q.db.ExecContext(ctx, createShip, arg.Mmsi, arg.ShipName)
+	return err
+}
+
+const createShipTableIfNotExist = `-- name: CreateShipTableIfNotExist :exec
+CREATE TABLE IF NOT EXISTS ships  (
+                       mmsi BIGINT PRIMARY KEY,
+                       ship_name VARCHAR(255)
+)
+`
+
+func (q *Queries) CreateShipTableIfNotExist(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, createShipTableIfNotExist)
 	return err
 }
 
@@ -46,4 +84,96 @@ func (q *Queries) GetShip(ctx context.Context, mmsi int64) (Ship, error) {
 	var i Ship
 	err := row.Scan(&i.Mmsi, &i.ShipName)
 	return i, err
+}
+
+const upsertPositionEntry = `-- name: UpsertPositionEntry :exec
+INSERT INTO position_reports (
+    mmsi,
+    latitude,
+    longitude,
+    cog,
+    sog,
+    true_heading,
+    navigational_status,
+    position_accuracy,
+    communication_state,
+    rate_of_turn,
+    special_manoeuvre_indicator,
+    repeat_indicator,
+    message_id,
+    valid,
+    time_utc
+)
+VALUES (
+           $1,  -- id
+           $2,  -- mmsi
+           $3,  -- latitude
+           $4,  -- longitude
+           $5,  -- cog
+           $6,  -- sog
+           $7,  -- true_heading
+           $8,  -- navigational_status
+           $9,  -- position_accuracy
+           $10, -- communication_state
+           $11, -- rate_of_turn
+           $12, -- special_manoeuvre_indicator
+           $13, -- repeat_indicator
+           $14, -- message_id
+           $15 -- valid
+       )
+ON CONFLICT (mmsi) DO UPDATE
+    SET
+        latitude = EXCLUDED.latitude,
+        longitude = EXCLUDED.longitude,
+        cog = EXCLUDED.cog,
+        sog = EXCLUDED.sog,
+        true_heading = EXCLUDED.true_heading,
+        navigational_status = EXCLUDED.navigational_status,
+        position_accuracy = EXCLUDED.position_accuracy,
+        communication_state = EXCLUDED.communication_state,
+        rate_of_turn = EXCLUDED.rate_of_turn,
+        special_manoeuvre_indicator = EXCLUDED.special_manoeuvre_indicator,
+        repeat_indicator = EXCLUDED.repeat_indicator,
+        message_id = EXCLUDED.message_id,
+        valid = EXCLUDED.valid,
+        time_utc = EXCLUDED.time_utc
+`
+
+type UpsertPositionEntryParams struct {
+	Mmsi                      int64
+	Latitude                  sql.NullFloat64
+	Longitude                 sql.NullFloat64
+	Cog                       sql.NullInt32
+	Sog                       sql.NullInt32
+	TrueHeading               sql.NullInt32
+	NavigationalStatus        sql.NullInt32
+	PositionAccuracy          sql.NullBool
+	CommunicationState        sql.NullInt64
+	RateOfTurn                sql.NullInt32
+	SpecialManoeuvreIndicator sql.NullInt32
+	RepeatIndicator           sql.NullInt32
+	MessageID                 sql.NullInt32
+	Valid                     sql.NullBool
+	TimeUtc                   sql.NullTime
+}
+
+func (q *Queries) UpsertPositionEntry(ctx context.Context, arg UpsertPositionEntryParams) error {
+	_, err := q.db.ExecContext(ctx, upsertPositionEntry,
+		arg.Mmsi,
+		arg.Latitude,
+		arg.Longitude,
+		arg.Cog,
+		arg.Sog,
+		arg.TrueHeading,
+		arg.NavigationalStatus,
+		arg.PositionAccuracy,
+		arg.CommunicationState,
+		arg.RateOfTurn,
+		arg.SpecialManoeuvreIndicator,
+		arg.RepeatIndicator,
+		arg.MessageID,
+		arg.Valid,
+		arg.TimeUtc,
+	)
+	return err
 }

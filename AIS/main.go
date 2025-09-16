@@ -2,9 +2,8 @@ package main
 
 import (
 	"aisstream/db"
-	"aisstream/db/generated"
+	"aisstream/db/params"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -21,6 +20,14 @@ func main() {
 	}
 	ctx := context.Background()
 	postgresDataBase := db.InitDB()
+	err := postgresDataBase.CreateShipTableIfNotExist(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = postgresDataBase.CreatePositionReportTableIfNotExist(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	url := os.Getenv("AIS_STREAM_URL")
 
@@ -63,18 +70,17 @@ func main() {
 		case aisstream.POSITION_REPORT:
 			var positionReport aisstream.PositionReport
 			positionReport = *packet.Message.PositionReport
-			shipArgs := generated.CreateShipParams{
-				Mmsi: int64(positionReport.UserID),
-				ShipName: sql.NullString{
-					String: shipName,
-					Valid:  true,
-				},
-			}
+			shipArgs := params.BuildCreateShipParams(int64(positionReport.UserID), shipName)
 			err := postgresDataBase.CreateShip(ctx, shipArgs)
 			if err != nil {
 				log.Fatalln(err)
 			}
 
+			positionReportArgs := params.BuildUpsertPositionEntryParams(positionReport)
+			err = postgresDataBase.UpsertPositionEntry(ctx, positionReportArgs)
+			if err != nil {
+				log.Fatalln(err)
+			}
 			fmt.Printf("MMSI: %d Ship Name: %s Latitude: %f Longitude: %f\n",
 				positionReport.UserID, shipName, positionReport.Latitude, positionReport.Longitude)
 		}

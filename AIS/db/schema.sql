@@ -4,8 +4,7 @@ CREATE TABLE ships (
 );
 
 CREATE TABLE position_reports (
-    id SERIAL PRIMARY KEY,
-    mmsi BIGINT REFERENCES ships(mmsi) ON DELETE CASCADE,
+    mmsi BIGINT PRIMARY KEY REFERENCES ships(mmsi) ON DELETE CASCADE,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
     cog INTEGER,

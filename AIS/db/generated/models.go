@@ -9,8 +9,7 @@ import (
 )
 
 type PositionReport struct {
-	ID                        int32
-	Mmsi                      sql.NullInt64
+	Mmsi                      int64
 	Latitude                  sql.NullFloat64
 	Longitude                 sql.NullFloat64
 	Cog                       sql.NullInt32
