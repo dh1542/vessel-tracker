@@ -22,7 +22,7 @@ func ServeHTTPServer(ctx context.Context, db *generated.Queries) {
 	router := mux.NewRouter()
 
 	// Define endpoints
-	router.HandleFunc("/map/{minLatitude}/{maxLatitude}/{minLongitude}/{maxLongitude}", GetShipsForPositionHandler(ctx, db)).Methods("GET")
+	router.HandleFunc("/api/{minLatitude}/{maxLatitude}/{minLongitude}/{maxLongitude}", GetShipsForPositionHandler(ctx, db)).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
