@@ -5,24 +5,24 @@
 package generated
 
 import (
-	"database/sql"
+	"time"
 )
 
 type PositionReport struct {
 	Mmsi                      int64
-	ShipName                  sql.NullString
-	Latitude                  sql.NullFloat64
-	Longitude                 sql.NullFloat64
-	Cog                       sql.NullInt32
-	Sog                       sql.NullInt32
-	TrueHeading               sql.NullInt32
-	NavigationalStatus        sql.NullInt32
-	PositionAccuracy          sql.NullBool
-	CommunicationState        sql.NullInt64
-	RateOfTurn                sql.NullInt32
-	SpecialManoeuvreIndicator sql.NullInt32
-	RepeatIndicator           sql.NullInt32
-	MessageID                 sql.NullInt32
-	Valid                     sql.NullBool
-	TimeUtc                   sql.NullTime
+	ShipName                  string
+	Latitude                  float64
+	Longitude                 float64
+	Cog                       int32
+	Sog                       int32
+	TrueHeading               int32
+	NavigationalStatus        int32
+	PositionAccuracy          bool
+	CommunicationState        int64
+	RateOfTurn                int32
+	SpecialManoeuvreIndicator int32
+	RepeatIndicator           int32
+	MessageID                 int32
+	Valid                     bool
+	TimeUtc                   time.Time
 }

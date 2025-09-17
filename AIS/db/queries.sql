@@ -1,21 +1,21 @@
 -- name: CreatePositionReportTableIfNotExist :exec
 CREATE TABLE IF NOT EXISTS position_reports (
-                                  mmsi BIGINT PRIMARY KEY,
-                                    ship_name VARCHAR(255),
-                                  latitude DOUBLE PRECISION,
-                                  longitude DOUBLE PRECISION,
-                                  cog INTEGER,
-                                  sog INTEGER,
-                                  true_heading INTEGER,
-                                  navigational_status INTEGER,
-                                  position_accuracy BOOLEAN,
-                                  communication_state BIGINT,
-                                  rate_of_turn INTEGER,
-                                  special_manoeuvre_indicator INTEGER,
-                                  repeat_indicator INTEGER,
-                                  message_id INTEGER,
-                                  valid BOOLEAN,
-                                  time_utc TIMESTAMP
+                                                mmsi BIGINT PRIMARY KEY NOT NULL,
+                                                ship_name VARCHAR NOT NULL,
+                                                latitude DOUBLE PRECISION NOT NULL,
+                                                longitude DOUBLE PRECISION NOT NULL,
+                                                cog INTEGER NOT NULL,
+                                                sog INTEGER NOT NULL,
+                                                true_heading INTEGER NOT NULL,
+                                                navigational_status INTEGER NOT NULL,
+                                                position_accuracy BOOLEAN NOT NULL,
+                                                communication_state BIGINT NOT NULL,
+                                                rate_of_turn INTEGER NOT NULL,
+                                                special_manoeuvre_indicator INTEGER NOT NULL,
+                                                repeat_indicator INTEGER NOT NULL,
+                                                message_id INTEGER NOT NULL,
+                                                valid BOOLEAN NOT NULL,
+                                                time_utc TIMESTAMP NOT NULL
 );
 
 -- name: EmptyDBTables :exec
