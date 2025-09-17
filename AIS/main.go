@@ -1,6 +1,7 @@
 package main
 
 import (
+	"aisstream/api"
 	"aisstream/db"
 	"aisstream/db/params"
 	"context"
@@ -29,7 +30,7 @@ func main() {
 	url := os.Getenv("AIS_STREAM_URL")
 
 	// http server
-	//api.ServeHTTPServer()
+	api.ServeHTTPServer(ctx, postgresDataBase)
 
 	// websocket
 	ws, _, err := websocket.DefaultDialer.Dial(url, nil)

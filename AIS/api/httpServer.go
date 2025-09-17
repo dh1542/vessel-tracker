@@ -4,7 +4,7 @@ import (
 	"aisstream/db/generated"
 	"aisstream/db/params"
 	"context"
-	"database/sql"
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -18,41 +18,58 @@ func (h homeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("hello world"))
 }
 
-func ServeHTTPServer(dbContext context.Context) {
+func ServeHTTPServer(ctx context.Context, db *generated.Queries) {
 	router := mux.NewRouter()
 
 	// Define endpoints
-	router.HandleFunc("/map/{minLatitude}/{maxLatitude}/{minLongitude}/{maxLongitude}", getShipsForPosition).Methods("GET")
+	router.HandleFunc("/map/{minLatitude}/{maxLatitude}/{minLongitude}/{maxLongitude}", GetShipsForPositionHandler(ctx, db)).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
-func getShipsForPosition(w http.ResponseWriter, r *http.Request) {
-	parameter := mux.Vars(r)
+func GetShipsForPositionHandler(ctx context.Context, db *generated.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		parameter := mux.Vars(r)
 
-	minLatitude, err := strconv.ParseFloat(parameter["minLatitude"], 64)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		minLatitude, err := strconv.ParseFloat(parameter["minLatitude"], 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		maxLatitude, err := strconv.ParseFloat(parameter["maxLatitude"], 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
+		minLongitude, err := strconv.ParseFloat(parameter["minLongitude"], 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
+		maxLongitude, err := strconv.ParseFloat(parameter["maxLongitude"], 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
+		res, err := fetchShipsForPosition(ctx, db, minLatitude, maxLatitude, minLongitude, maxLongitude)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(res)
 	}
+}
 
-	maxLatitude, err := strconv.ParseFloat(parameter["maxLatitude"], 64)
+func fetchShipsForPosition(ctx context.Context, db *generated.Queries, minLatitude, minLongitude, maxLatitude, maxLongitude float64) ([]generated.PositionReport, error) {
+	log.Println("Fetching ships for", minLatitude, minLongitude, maxLongitude)
+	postionDataArgs := params.BuildGetPositionDataParams(minLatitude, minLongitude, maxLatitude, maxLongitude)
+
+	data, err := db.GetPositionData(ctx, postionDataArgs)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		return nil, err
 	}
-
-	minLongitude, err := strconv.ParseFloat(parameter["minLongitude"], 64)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-
-	maxLongitude, err := strconv.ParseFloat(parameter["maxLongitude"], 64)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-
-	getPostionDataArgs := params.BuildGetPositionDataParams(minLatitude, minLongitude, maxLatitude, maxLongitude)
-
-	data, err := generated.GetPositionDataP
-
+	return data, nil
 }
