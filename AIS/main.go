@@ -3,7 +3,7 @@ package main
 import (
 	"aisstream/api"
 	"aisstream/db"
-	"aisstream/db/params"
+	"aisstream/db/models"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -72,7 +72,7 @@ func main() {
 			var positionReport aisstream.PositionReport
 			positionReport = *packet.Message.PositionReport
 
-			positionReportArgs := params.BuildUpsertPositionEntryParams(shipName, positionReport)
+			positionReportArgs := models.BuildUpsertPositionEntryParams(shipName, positionReport)
 			err = postgresDataBase.UpsertPositionEntry(ctx, positionReportArgs)
 			if err != nil {
 				log.Fatalln(err)

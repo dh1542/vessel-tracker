@@ -2,9 +2,10 @@ package api
 
 import (
 	"aisstream/db/generated"
-	"aisstream/db/params"
+	"aisstream/db/models"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -65,9 +66,10 @@ func GetShipsForPositionHandler(ctx context.Context, db *generated.Queries) http
 
 func fetchShipsForPosition(ctx context.Context, db *generated.Queries, minLatitude, minLongitude, maxLatitude, maxLongitude float64) ([]generated.PositionReport, error) {
 	log.Println("Fetching ships for", minLatitude, minLongitude, maxLongitude)
-	postionDataArgs := params.BuildGetPositionDataParams(minLatitude, minLongitude, maxLatitude, maxLongitude)
+	postionDataArgs := models.BuildGetPositionDataParams(minLatitude, minLongitude, maxLongitude, maxLatitude)
 
 	data, err := db.GetPositionData(ctx, postionDataArgs)
+	fmt.Println(data)
 	if err != nil {
 		return nil, err
 	}
