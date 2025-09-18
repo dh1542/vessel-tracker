@@ -71,7 +71,7 @@ func main() {
 		case aisstream.POSITION_REPORT:
 			var positionReport aisstream.PositionReport
 			positionReport = *packet.Message.PositionReport
-
+			log.Println("New ship with name", shipName)
 			positionReportArgs := models.BuildUpsertPositionEntryParams(shipName, positionReport)
 			err = postgresDataBase.UpsertPositionEntry(ctx, positionReportArgs)
 			if err != nil {
