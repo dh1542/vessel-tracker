@@ -5,10 +5,9 @@ import (
 	"aisstream/db/models"
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
-	"strings"
 	"time"
+	"unicode"
 
 	aisstream "github.com/aisstream/ais-message-models/golang/aisStream"
 	"github.com/gorilla/websocket"
@@ -34,13 +33,12 @@ func handleMessage(ctx context.Context, postgresDB *generated.Queries, p []byte)
 		positionReport := *packet.Message.PositionReport
 
 		positionReportArgs := models.BuildUpsertPositionEntryParams(shipName, positionReport)
-		if err := postgresDB.UpsertPositionEntry(ctx, positionReportArgs); err != nil {
+		err := postgresDB.UpsertPositionEntry(ctx, positionReportArgs)
+		if err != nil {
 			log.Println("Failed to upsert position entry:", err)
 			return
 		}
 
-		fmt.Printf("MMSI: %d Ship Name: %s Latitude: %f Longitude: %f\n",
-			positionReport.UserID, shipName, positionReport.Latitude, positionReport.Longitude)
 	}
 }
 
@@ -80,6 +78,13 @@ func ConnectAndSubscribe(ctx context.Context, postgresDB *generated.Queries, url
 }
 
 func isValidShipName(shipName string) bool {
-	isNotDigit := func(c rune) bool { return c < '0' || c > '9' }
-	return !(len(shipName) == 0 || strings.ContainsFunc(shipName, isNotDigit))
+	runes := []rune(shipName)
+
+	for r := 0; r < len(runes); r++ {
+		if !unicode.IsDigit(runes[r]) {
+			return true
+		}
+
+	}
+	return false
 }
