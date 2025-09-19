@@ -3,6 +3,7 @@ import { useMap } from "react-leaflet/hooks";
 import { useEffect, useState } from "react";
 
 import { Bounds } from "@/types";
+import Ship, { ShipProps } from "./geojson/ship";
 
 export interface TileLayerProps {
   initialPosition: number[];
@@ -22,16 +23,24 @@ export default function TileLayerComponent(props: TileLayerProps) {
         maxLongitude: currentBounds.getEast(),
         minLongitude: currentBounds.getWest(),
       };
-
+      console.log(currentBounds.getCenter());
       setBounds(bound);
     }
     updateBounds();
     map.on("moveend", updateBounds);
+    
 
     return () => {
       map.off("moveend", updateBounds);
     };
   }, [map]);
+
+  const testShipProps: ShipProps = {
+    mmsi: 219016555,
+    name: "LOLLAND",
+    position: { latitude: 54.90533333333334, longitude: 10.900533333333334 },
+    heading: 107,
+  };
 
   return (
     <>
@@ -39,6 +48,7 @@ export default function TileLayerComponent(props: TileLayerProps) {
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <Ship {...testShipProps}></Ship>
       <Marker position={props.initialPosition}>
         <Popup>
           <div className="absolute top-2 left-2 bg-white p-2 rounded shadow">
