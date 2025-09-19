@@ -53,7 +53,7 @@ func GetShipsForPositionHandler(ctx context.Context, db *generated.Queries) http
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 
-		res, err := fetchShipsForPosition(ctx, db, minLatitude, maxLatitude, minLongitude, maxLongitude)
+		res, err := fetchShipsForPosition(ctx, db, minLatitude, minLongitude, maxLatitude, maxLongitude)
 		if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return

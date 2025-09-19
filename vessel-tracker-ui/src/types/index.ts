@@ -15,3 +15,10 @@ export type Bounds = {
   minLongitude: number;
   maxLongitude: number;
 };
+
+export type Ship = {
+  mmsi: number;
+  name: string;
+  position: Position;
+  heading: number;
+}

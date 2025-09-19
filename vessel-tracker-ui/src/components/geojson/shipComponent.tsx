@@ -1,7 +1,7 @@
 import { Position } from "@/types";
 import { Circle, Popup } from "react-leaflet";
 
-export interface ShipProps {
+export interface ShipComponentProps {
     mmsi: number;
     name: string;
     position: Position;
@@ -9,7 +9,7 @@ export interface ShipProps {
 }
 
 
-export default function Ship(props: ShipProps){
+export default function ShipComponent(props: ShipComponentProps){
     return (
         <>
             <Circle center={[props.position.latitude, props.position.longitude]} radius={50} pathOptions={{color: 'blue'}}>

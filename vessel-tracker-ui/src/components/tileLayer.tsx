@@ -2,8 +2,9 @@ import { Marker, Popup, TileLayer } from "react-leaflet";
 import { useMap } from "react-leaflet/hooks";
 import { useEffect, useState } from "react";
 
-import { Bounds } from "@/types";
-import Ship, { ShipProps } from "./geojson/ship";
+import { Bounds, Ship } from "@/types";
+import  ShipComponent, { ShipComponentProps } from "./geojson/shipComponent";
+import { fetchShips } from "@/api/ship";
 
 export interface TileLayerProps {
   initialPosition: number[];
@@ -11,10 +12,11 @@ export interface TileLayerProps {
 
 export default function TileLayerComponent(props: TileLayerProps) {
   const [bounds, setBounds] = useState<Bounds>();
+  const [ships, setShips] = useState<Ship[]>([]);
   const map = useMap();
 
   useEffect(() => {
-    function updateBounds() {
+    async function updateBounds() {
       const currentBounds = map.getBounds();
 
       const bound: Bounds = {
@@ -23,8 +25,8 @@ export default function TileLayerComponent(props: TileLayerProps) {
         maxLongitude: currentBounds.getEast(),
         minLongitude: currentBounds.getWest(),
       };
-      console.log(currentBounds.getCenter());
       setBounds(bound);
+      setShips(await fetchShips(bound))
     }
     updateBounds();
     map.on("moveend", updateBounds);
@@ -35,7 +37,7 @@ export default function TileLayerComponent(props: TileLayerProps) {
     };
   }, [map]);
 
-  const testShipProps: ShipProps = {
+  const testShipProps: ShipComponentProps = {
     mmsi: 219016555,
     name: "LOLLAND",
     position: { latitude: 54.90533333333334, longitude: 10.900533333333334 },
@@ -48,7 +50,16 @@ export default function TileLayerComponent(props: TileLayerProps) {
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Ship {...testShipProps}></Ship>
+
+      {ships.map((ship) => (
+        <ShipComponent 
+          mmsi={ship.mmsi}
+          name={ship.name}
+          position={ship.position}
+          heading={ship.heading}
+        ></ShipComponent>
+      ))}
+
       <Marker position={props.initialPosition}>
         <Popup>
           <div className="absolute top-2 left-2 bg-white p-2 rounded shadow">
