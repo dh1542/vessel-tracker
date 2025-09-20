@@ -2,6 +2,7 @@ package main
 
 import (
 	"aisstream/api"
+	"aisstream/api/socket"
 	"aisstream/db"
 
 	"context"
@@ -34,6 +35,6 @@ func main() {
 
 	go api.ServeHTTPServer(ctx, postgresDB)
 
-	api.ConnectAndSubscribe(ctx, postgresDB, url, subscription)
+	socket.ConnectAndSubscribe(ctx, postgresDB, url, subscription)
 
 }
