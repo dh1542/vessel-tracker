@@ -6,6 +6,7 @@ import (
 	"aisstream/util"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	aisstream "github.com/aisstream/ais-message-models/golang/aisStream"
@@ -30,11 +31,13 @@ func HandleSocketMessage(ctx context.Context, postgresDB *generated.Queries, p [
 	switch packet.MessageType {
 	case aisstream.POSITION_REPORT:
 		handlePositionMessage(packet, shipName, ctx, postgresDB)
+	case aisstream.SHIP_STATIC_DATA:
+		handleStaticMessage(packet, shipName, ctx, postgresDB)
 	}
 }
 
 func handlePositionMessage(packet aisstream.AisStreamMessage, shipName string, ctx context.Context, postgresDB *generated.Queries) {
-	log.Println("Received a Position Report")
+	//log.Println("Received a Position Report")
 	if packet.Message.PositionReport == nil {
 		return
 	}
@@ -46,4 +49,11 @@ func handlePositionMessage(packet aisstream.AisStreamMessage, shipName string, c
 		log.Println("Failed to upsert position entry:", err)
 		return
 	}
+}
+
+func handleStaticMessage(packet aisstream.AisStreamMessage, shipName string, ctx context.Context, postgresDB *generated.Queries) {
+	log.Println("Received a Static Data")
+	staticReport := *packet.Message.ShipStaticData
+	fmt.Println(staticReport.Destination)
+	//fmt.Println(staticReport)
 }

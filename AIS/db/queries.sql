@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS position_reports (
                                                 repeat_indicator INTEGER NOT NULL,
                                                 message_id INTEGER NOT NULL,
                                                 valid BOOLEAN NOT NULL,
-                                                time_utc TIMESTAMP NOT NULL
+                                                time_utc TIMESTAMP NOT NULL,
+                                                destination VARCHAR NOT NULL
 );
 
 -- name: EmptyDBTables :exec
@@ -39,7 +40,8 @@ INSERT INTO position_reports (
     repeat_indicator,
     message_id,
     valid,
-    time_utc
+    time_utc,
+    destination
 )
 VALUES (
            $1,  -- mmsi
@@ -57,7 +59,8 @@ VALUES (
            $13, -- repeat_indicator
            $14, -- message_id
            $15, --valid
-            $16 --timeUtc
+            $16,
+        $17--timeUtc
        )
 ON CONFLICT (mmsi) DO UPDATE
     SET
@@ -75,7 +78,8 @@ ON CONFLICT (mmsi) DO UPDATE
         repeat_indicator = EXCLUDED.repeat_indicator,
         message_id = EXCLUDED.message_id,
         valid = EXCLUDED.valid,
-        time_utc = EXCLUDED.time_utc;
+        time_utc = EXCLUDED.time_utc,
+        destination = EXCLUDED.destination;
 
 -- name: GetPositionData :many
 SELECT *

@@ -14,5 +14,8 @@ CREATE TABLE position_reports (
                                   repeat_indicator INTEGER NOT NULL,
                                   message_id INTEGER NOT NULL,
                                   valid BOOLEAN NOT NULL,
-                                  time_utc TIMESTAMP NOT NULL
+                                  time_utc TIMESTAMP NOT NULL,
+                                    destination VARCHAR NOT NULL
+
 );
+
