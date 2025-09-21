@@ -12,22 +12,23 @@ import (
 
 const createPositionReportTableIfNotExist = `-- name: CreatePositionReportTableIfNotExist :exec
 CREATE TABLE IF NOT EXISTS position_reports (
-                                  mmsi BIGINT PRIMARY KEY,
-                                    ship_name VARCHAR(255),
-                                  latitude DOUBLE PRECISION,
-                                  longitude DOUBLE PRECISION,
-                                  cog INTEGER,
-                                  sog INTEGER,
-                                  true_heading INTEGER,
-                                  navigational_status INTEGER,
-                                  position_accuracy BOOLEAN,
-                                  communication_state BIGINT,
-                                  rate_of_turn INTEGER,
-                                  special_manoeuvre_indicator INTEGER,
-                                  repeat_indicator INTEGER,
-                                  message_id INTEGER,
-                                  valid BOOLEAN,
-                                  time_utc TIMESTAMP
+                                                mmsi BIGINT PRIMARY KEY NOT NULL,
+                                                ship_name VARCHAR NOT NULL,
+                                                latitude DOUBLE PRECISION NOT NULL,
+                                                longitude DOUBLE PRECISION NOT NULL,
+                                                cog INTEGER NOT NULL,
+                                                sog INTEGER NOT NULL,
+                                                true_heading INTEGER NOT NULL,
+                                                navigational_status INTEGER NOT NULL,
+                                                position_accuracy BOOLEAN NOT NULL,
+                                                communication_state BIGINT NOT NULL,
+                                                rate_of_turn INTEGER NOT NULL,
+                                                special_manoeuvre_indicator INTEGER NOT NULL,
+                                                repeat_indicator INTEGER NOT NULL,
+                                                message_id INTEGER NOT NULL,
+                                                valid BOOLEAN NOT NULL,
+                                                time_utc TIMESTAMP NOT NULL,
+                                                destination VARCHAR NOT NULL
 )
 `
 
@@ -47,7 +48,7 @@ func (q *Queries) EmptyDBTables(ctx context.Context) error {
 }
 
 const getPositionData = `-- name: GetPositionData :many
-SELECT mmsi, ship_name, latitude, longitude, cog, sog, true_heading, navigational_status, position_accuracy, communication_state, rate_of_turn, special_manoeuvre_indicator, repeat_indicator, message_id, valid, time_utc
+SELECT mmsi, ship_name, latitude, longitude, cog, sog, true_heading, navigational_status, position_accuracy, communication_state, rate_of_turn, special_manoeuvre_indicator, repeat_indicator, message_id, valid, time_utc, destination
 FROM position_reports
 WHERE latitude  BETWEEN $1 AND $2 --minLat --maxLat
 AND longitude BETWEEN $3 AND $4
@@ -91,6 +92,7 @@ func (q *Queries) GetPositionData(ctx context.Context, arg GetPositionDataParams
 			&i.MessageID,
 			&i.Valid,
 			&i.TimeUtc,
+			&i.Destination,
 		); err != nil {
 			return nil, err
 		}
@@ -122,7 +124,8 @@ INSERT INTO position_reports (
     repeat_indicator,
     message_id,
     valid,
-    time_utc
+    time_utc,
+    destination
 )
 VALUES (
            $1,  -- mmsi
@@ -140,7 +143,8 @@ VALUES (
            $13, -- repeat_indicator
            $14, -- message_id
            $15, --valid
-            $16 --timeUtc
+            $16,
+        $17--timeUtc
        )
 ON CONFLICT (mmsi) DO UPDATE
     SET
@@ -158,7 +162,8 @@ ON CONFLICT (mmsi) DO UPDATE
         repeat_indicator = EXCLUDED.repeat_indicator,
         message_id = EXCLUDED.message_id,
         valid = EXCLUDED.valid,
-        time_utc = EXCLUDED.time_utc
+        time_utc = EXCLUDED.time_utc,
+        destination = EXCLUDED.destination
 `
 
 type UpsertPositionEntryParams struct {
@@ -178,6 +183,7 @@ type UpsertPositionEntryParams struct {
 	MessageID                 int32
 	Valid                     bool
 	TimeUtc                   time.Time
+	Destination               string
 }
 
 func (q *Queries) UpsertPositionEntry(ctx context.Context, arg UpsertPositionEntryParams) error {
@@ -198,6 +204,7 @@ func (q *Queries) UpsertPositionEntry(ctx context.Context, arg UpsertPositionEnt
 		arg.MessageID,
 		arg.Valid,
 		arg.TimeUtc,
+		arg.Destination,
 	)
 	return err
 }

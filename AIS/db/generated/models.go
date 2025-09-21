@@ -25,4 +25,5 @@ type PositionReport struct {
 	MessageID                 int32
 	Valid                     bool
 	TimeUtc                   time.Time
+	Destination               string
 }
