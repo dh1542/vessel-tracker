@@ -5,6 +5,7 @@ import (
 	"aisstream/db/models"
 	"aisstream/util"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -54,6 +55,11 @@ func handlePositionMessage(packet aisstream.AisStreamMessage, shipName string, c
 func handleStaticMessage(packet aisstream.AisStreamMessage, shipName string, ctx context.Context, postgresDB *generated.Queries) {
 	log.Println("Received a Static Data")
 	staticReport := *packet.Message.ShipStaticData
-	fmt.Println(staticReport.Destination)
-	//fmt.Println(staticReport)
+
+	params := generated.UpdateShipDestinationParams{
+		ShipName:    shipName,
+		Destination: sql.NullString{String: staticReport.Destination, Valid: true},
+	}
+	postgresDB.UpdateShipDestination(ctx, params)
+	fmt.Println(staticReport)
 }

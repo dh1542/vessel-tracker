@@ -1,10 +1,11 @@
-import { Ship, Bounds } from "@/types";
+import { Ship, Bounds, SQLNonNullString } from "@/types";
 
 export const fetchShips = async (bounds: Bounds): Promise<Ship[]> => {
   const url = `/api/${bounds.minLatitude}/${bounds.maxLatitude}/${bounds.minLongitude}/${bounds.maxLongitude}`;
   console.log("Fetching ships from: " + url);
   const response = await fetch(url);
   const json = await response.json();
+  console.log("Response JSON: ", json);
 
   const ships: Ship[] = [];
 
@@ -18,6 +19,7 @@ export const fetchShips = async (bounds: Bounds): Promise<Ship[]> => {
           longitude: shipData.Longitude,
         },
         heading: shipData.TrueHeading,
+        destination: shipData.Destination.String,
       };
       ships.push(ship);
       console.log("Fetched ship: ", ship);

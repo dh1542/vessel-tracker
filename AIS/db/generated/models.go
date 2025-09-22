@@ -5,6 +5,7 @@
 package generated
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -25,5 +26,5 @@ type PositionReport struct {
 	MessageID                 int32
 	Valid                     bool
 	TimeUtc                   time.Time
-	Destination               string
+	Destination               sql.NullString
 }

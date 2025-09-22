@@ -3,7 +3,7 @@ import { useMap } from "react-leaflet/hooks";
 import { useEffect, useState } from "react";
 
 import { Bounds, Ship } from "@/types";
-import  ShipComponent, { ShipComponentProps } from "./geojson/shipComponent";
+import  ShipComponent, { ShipComponentProps } from "./ship/shipComponent";
 import { fetchShips } from "@/api/ship";
 
 export interface TileLayerProps {
@@ -60,8 +60,8 @@ export default function TileLayerComponent(props: TileLayerProps) {
   return (
     <>
       <TileLayer
-      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
       {ships.map((ship) => (

@@ -9,6 +9,11 @@ export type Position = {
   longitude: number;
 };
 
+export type SQLNonNullString = {
+  string: string;
+  valid: boolean;
+};
+
 export type Bounds = {
   maxLatitude: number;
   minLatitude: number;
@@ -21,4 +26,5 @@ export type Ship = {
   name: string;
   position: Position;
   heading: number;
-}
+  destination: string;
+};
