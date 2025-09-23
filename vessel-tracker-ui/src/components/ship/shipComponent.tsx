@@ -1,12 +1,13 @@
 import { Position } from "@/types";
 import { Circle, Polyline, Popup } from "react-leaflet";
+import ShipPopup from "./shipPopUp";
 
 export interface ShipComponentProps {
-    mmsi: number;
-    name: string;
-    position: Position;
-    heading: number;
-    destination?: string;
+  mmsi: number;
+  name: string;
+  position: Position;
+  heading: number;
+  destination?: string;
 }
 
 // React component to render the arrow shape
@@ -43,8 +44,6 @@ function ArrowIcon({ heading }: { heading: number }) {
   );
 }
 
-
-
 export default function ShipComponent(props: ShipComponentProps) {
   const { latitude, longitude } = props.position;
   const distance = 0.001;
@@ -58,16 +57,11 @@ export default function ShipComponent(props: ShipComponentProps) {
         center={[latitude, longitude]}
         radius={50}
         pathOptions={{ color: "blue" }}
+        onClick={() => {
+          console.log(`Ship ${props.name} clicked`);
+        }}
       >
-        <Popup>
-          <div>
-            <h3>{props.name}</h3>
-            <p>MMSI: {props.mmsi}</p>
-            <p>Lat: {latitude.toFixed(5)}</p>
-            <p>Lng: {longitude.toFixed(5)}</p>
-            <p>Destination: {props.destination}</p>
-          </div>
-        </Popup>
+        <ShipPopup {...props} />
       </Circle>
       <Polyline
         positions={[
