@@ -1,6 +1,13 @@
 import { Position } from "@/types";
-import { Circle, Polyline, Popup } from "react-leaflet";
+import {
+  Circle,
+  Polyline,
+  Popup,
+  useMapEvent,
+  useMapEvents,
+} from "react-leaflet";
 import ShipPopup from "./shipPopUp";
+import React, { useEffect } from "react";
 
 export interface ShipComponentProps {
   mmsi: number;
@@ -57,12 +64,10 @@ export default function ShipComponent(props: ShipComponentProps) {
         center={[latitude, longitude]}
         radius={50}
         pathOptions={{ color: "blue" }}
-        onClick={() => {
-          console.log(`Ship ${props.name} clicked`);
-        }}
       >
         <ShipPopup {...props} />
       </Circle>
+
       <Polyline
         positions={[
           [latitude, longitude],
