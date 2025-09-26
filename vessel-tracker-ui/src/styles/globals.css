@@ -1,3 +1,9 @@
 @import "tailwindcss";
 
-@config "../../tailwind.config.js"
+
+
+
+.leaflet-popup-tip {
+  background: transparent !important;
+  box-shadow: none !important;
+}

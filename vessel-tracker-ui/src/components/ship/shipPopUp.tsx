@@ -6,7 +6,7 @@ import ShipPopUpContent from "./shipPopUpContent";
 
 export default function ShipPopup(props: ShipComponentProps): JSX.Element {
   return (
-    <Popup>
+    <Popup >
       {/* <div className="w-200 h-100p-2">
         <h3 className="text-lg font-semibold">{props.name}</h3>
         <p className="text-sm">MMSI: {props.mmsi}</p>
