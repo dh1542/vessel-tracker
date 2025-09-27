@@ -1,4 +1,4 @@
 .env
 .idea
 .sum
-.node_modules
+/node_modules
