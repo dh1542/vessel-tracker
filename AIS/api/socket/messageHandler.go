@@ -1,6 +1,7 @@
 package socket
 
 import (
+	"aisstream/api/scraper"
 	"aisstream/db/generated"
 	"aisstream/db/models"
 	"aisstream/util"
@@ -46,10 +47,24 @@ func handlePositionMessage(packet aisstream.AisStreamMessage, shipName string, c
 
 	positionReportArgs := models.BuildUpsertPositionEntryParams(shipName, positionReport)
 	err := postgresDB.UpsertPositionEntry(ctx, positionReportArgs)
+
+	hasImage, _ := postgresDB.HasImage(ctx, shipName)
+
+	if hasImage {
+		imageUrl := scraper.ScrapeImageUrlForShipName(shipName)
+
+		params := generated.SetImageForShipParams{
+			ImageUrl: imageUrl,
+			ShipName: shipName,
+		}
+		postgresDB.SetImageForShip(ctx, params)
+	}
+
 	if err != nil {
 		log.Println("Failed to upsert position entry:", err)
 		return
 	}
+
 }
 
 func handleStaticMessage(packet aisstream.AisStreamMessage, shipName string, ctx context.Context, postgresDB *generated.Queries) {
@@ -60,6 +75,7 @@ func handleStaticMessage(packet aisstream.AisStreamMessage, shipName string, ctx
 		ShipName:    shipName,
 		Destination: sql.NullString{String: staticReport.Destination, Valid: true},
 	}
+
 	postgresDB.UpdateShipDestination(ctx, params)
 	fmt.Println(staticReport)
 }

@@ -19,4 +19,10 @@ CREATE TABLE position_reports
     destination                 VARCHAR
 );
 
+CREATE TABLE images
+(
+    ship_name VARCHAR NOT NULL,
+    image_url VARCHAR NOT NULL
+);
+
 

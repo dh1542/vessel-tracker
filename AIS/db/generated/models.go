@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+type Image struct {
+	ShipName string
+	ImageUrl string
+}
+
 type PositionReport struct {
 	Mmsi                      int64
 	ShipName                  string

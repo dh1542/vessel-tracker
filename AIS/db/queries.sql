@@ -20,8 +20,17 @@ CREATE TABLE IF NOT EXISTS position_reports
     destination                 VARCHAR
 );
 
+-- name: CreateImagesTableIfNotExist :exec
+CREATE TABLE IF NOT EXISTS images
+(
+    ship_name VARCHAR NOT NULL,
+    image_url VARCHAR NOT NULL
+);
+
 -- name: EmptyDBTables :exec
 TRUNCATE TABLE position_reports
+    RESTART IDENTITY CASCADE;
+TRUNCATE TABLE images
     RESTART IDENTITY CASCADE;
 
 -- name: UpsertPositionEntry :exec
@@ -87,4 +96,14 @@ WHERE latitude BETWEEN $1 AND $2 --minLat --maxLat
 UPDATE position_reports
 SET destination = $2
 WHERE ship_name = $1;
+
+-- name: HasImage :one
+SELECT
+    (image_url <> '') AS has_image
+FROM images
+WHERE ship_name = $1;
+
+-- name: SetImageForShip :exec
+INSERT INTO images(ship_name, image_url)
+VALUES ($1, $2);
 

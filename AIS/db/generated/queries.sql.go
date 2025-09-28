@@ -11,6 +11,19 @@ import (
 	"time"
 )
 
+const createImagesTableIfNotExist = `-- name: CreateImagesTableIfNotExist :exec
+CREATE TABLE IF NOT EXISTS images
+(
+    ship_name VARCHAR NOT NULL,
+    image_url VARCHAR NOT NULL
+)
+`
+
+func (q *Queries) CreateImagesTableIfNotExist(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, createImagesTableIfNotExist)
+	return err
+}
+
 const createPositionReportTableIfNotExist = `-- name: CreatePositionReportTableIfNotExist :exec
 CREATE TABLE IF NOT EXISTS position_reports
 (
@@ -107,6 +120,35 @@ func (q *Queries) GetPositionData(ctx context.Context, arg GetPositionDataParams
 		return nil, err
 	}
 	return items, nil
+}
+
+const hasImage = `-- name: HasImage :one
+SELECT
+    (image_url <> '') AS has_image
+FROM images
+WHERE ship_name = $1
+`
+
+func (q *Queries) HasImage(ctx context.Context, shipName string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, hasImage, shipName)
+	var has_image bool
+	err := row.Scan(&has_image)
+	return has_image, err
+}
+
+const setImageForShip = `-- name: SetImageForShip :exec
+INSERT INTO images(ship_name, image_url)
+VALUES ($1, $2)
+`
+
+type SetImageForShipParams struct {
+	ShipName string
+	ImageUrl string
+}
+
+func (q *Queries) SetImageForShip(ctx context.Context, arg SetImageForShipParams) error {
+	_, err := q.db.ExecContext(ctx, setImageForShip, arg.ShipName, arg.ImageUrl)
+	return err
 }
 
 const updateShipDestination = `-- name: UpdateShipDestination :exec
