@@ -43,14 +43,22 @@ ships and provides visual representation on a map.
 
 ## How to deploy
 
+### Prerequisites
 
-### Create namespace
-kubectl apply -f deployment/namespace.yaml
+- Docker
+- Minikube
+- go
+- react
+
 
 ### Install PostgreSQL with Helm
+kubectl apply -f deployment/namespace.yaml
+
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
 helm install postgres bitnami/postgresql \
   -n postgres \
   -f databases/postgres/postgres-values.yaml
+
+
