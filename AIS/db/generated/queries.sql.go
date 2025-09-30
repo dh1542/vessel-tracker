@@ -62,11 +62,25 @@ func (q *Queries) EmptyDBTables(ctx context.Context) error {
 	return err
 }
 
+const getImageByShipName = `-- name: GetImageByShipName :one
+SELECT image_url
+FROM images
+WHERE ship_name = $1
+`
+
+func (q *Queries) GetImageByShipName(ctx context.Context, shipName string) (string, error) {
+	row := q.db.QueryRowContext(ctx, getImageByShipName, shipName)
+	var image_url string
+	err := row.Scan(&image_url)
+	return image_url, err
+}
+
 const getPositionData = `-- name: GetPositionData :many
-SELECT mmsi, ship_name, latitude, longitude, cog, sog, true_heading, navigational_status, position_accuracy, communication_state, rate_of_turn, special_manoeuvre_indicator, repeat_indicator, message_id, valid, time_utc, destination
-FROM position_reports
-WHERE latitude BETWEEN $1 AND $2 --minLat --maxLat
-  AND longitude BETWEEN $3 AND $4
+SELECT pr.mmsi, pr.ship_name, pr.latitude, pr.longitude, pr.cog, pr.sog, pr.true_heading, pr.navigational_status, pr.position_accuracy, pr.communication_state, pr.rate_of_turn, pr.special_manoeuvre_indicator, pr.repeat_indicator, pr.message_id, pr.valid, pr.time_utc, pr.destination, i.image_url
+FROM position_reports pr
+LEFT JOIN images i ON pr.ship_name = i.ship_name
+WHERE pr.latitude BETWEEN $1 AND $2
+  AND pr.longitude BETWEEN $3 AND $4
 `
 
 type GetPositionDataParams struct {
@@ -76,7 +90,28 @@ type GetPositionDataParams struct {
 	Longitude_2 float64
 }
 
-func (q *Queries) GetPositionData(ctx context.Context, arg GetPositionDataParams) ([]PositionReport, error) {
+type GetPositionDataRow struct {
+	Mmsi                      int64
+	ShipName                  string
+	Latitude                  float64
+	Longitude                 float64
+	Cog                       int32
+	Sog                       int32
+	TrueHeading               int32
+	NavigationalStatus        int32
+	PositionAccuracy          bool
+	CommunicationState        int64
+	RateOfTurn                int32
+	SpecialManoeuvreIndicator int32
+	RepeatIndicator           int32
+	MessageID                 int32
+	Valid                     bool
+	TimeUtc                   time.Time
+	Destination               sql.NullString
+	ImageUrl                  sql.NullString
+}
+
+func (q *Queries) GetPositionData(ctx context.Context, arg GetPositionDataParams) ([]GetPositionDataRow, error) {
 	rows, err := q.db.QueryContext(ctx, getPositionData,
 		arg.Latitude,
 		arg.Latitude_2,
@@ -87,9 +122,9 @@ func (q *Queries) GetPositionData(ctx context.Context, arg GetPositionDataParams
 		return nil, err
 	}
 	defer rows.Close()
-	var items []PositionReport
+	var items []GetPositionDataRow
 	for rows.Next() {
-		var i PositionReport
+		var i GetPositionDataRow
 		if err := rows.Scan(
 			&i.Mmsi,
 			&i.ShipName,
@@ -108,6 +143,7 @@ func (q *Queries) GetPositionData(ctx context.Context, arg GetPositionDataParams
 			&i.Valid,
 			&i.TimeUtc,
 			&i.Destination,
+			&i.ImageUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -152,8 +188,6 @@ func (q *Queries) SetImageForShip(ctx context.Context, arg SetImageForShipParams
 }
 
 const updateShipDestination = `-- name: UpdateShipDestination :exec
-
-
 UPDATE position_reports
 SET destination = $2
 WHERE ship_name = $1
@@ -164,7 +198,6 @@ type UpdateShipDestinationParams struct {
 	Destination sql.NullString
 }
 
-// minLon --maxLon
 func (q *Queries) UpdateShipDestination(ctx context.Context, arg UpdateShipDestinationParams) error {
 	_, err := q.db.ExecContext(ctx, updateShipDestination, arg.ShipName, arg.Destination)
 	return err

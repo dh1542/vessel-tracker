@@ -3,7 +3,7 @@ import { useMap } from "react-leaflet/hooks";
 import { useEffect, useState } from "react";
 
 import { Bounds, Ship } from "@/types";
-import  ShipComponent, { ShipComponentProps } from "./ship/shipComponent";
+import ShipComponent, { ShipComponentProps } from "./ship/shipComponent";
 import { fetchShips } from "@/api/ship";
 
 export interface TileLayerProps {
@@ -31,31 +31,27 @@ export default function TileLayerComponent(props: TileLayerProps) {
     }
     updateBounds();
     map.on("moveend", updateBounds);
-    
 
     return () => {
       map.off("moveend", updateBounds);
     };
   }, [map]);
 
- 
-    useEffect(() => {
-      if (!bounds) return;
-      const fetchData = async () => {
-        const data = await fetchShips(bounds);
-        setShips([...data]);
-      };
+  useEffect(() => {
+    if (!bounds) return;
+    const fetchData = async () => {
+      const data = await fetchShips(bounds);
+      setShips([...data]);
+    };
 
-      fetchData();
+    fetchData();
 
-      const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 10000);
 
-      return () => {
-        clearInterval(interval);
-      };
-    }, [bounds]);
-  
-  
+    return () => {
+      clearInterval(interval);
+    };
+  }, [bounds]);
 
   return (
     <>
@@ -65,31 +61,33 @@ export default function TileLayerComponent(props: TileLayerProps) {
       />
 
       {ships.map((ship) => (
-      <ShipComponent 
-        key={ship.mmsi}
-        mmsi={ship.mmsi}
-        name={ship.name}
-        position={ship.position}
-        heading={ship.heading}
-      />
+        <ShipComponent
+          key={ship.mmsi}
+          mmsi={ship.mmsi}
+          name={ship.name}
+          position={ship.position}
+          heading={ship.heading}
+          imageUrl={ship.imageUrl}
+          destination={ship.destination}
+        />
       ))}
 
       <Marker position={props.initialPosition}>
-      <Popup>
-        <div className="absolute top-2 left-2 bg-white p-2 rounded shadow">
-        {bounds ? (
-          <>
-          <p>Max Lat: {bounds.maxLatitude.toFixed(5)}</p>
-          <p>Min Lat: {bounds.minLatitude.toFixed(5)}</p>
-          <p>Max Lng: {bounds.maxLongitude.toFixed(5)}</p>
-          <p>Min Lng: {bounds.minLongitude.toFixed(5)}</p>
-          <p>Ships: {ships.length}</p>
-          </>
-        ) : (
-          <p>Loading bounds...</p>
-        )}
-        </div>
-      </Popup>
+        <Popup>
+          <div className="absolute top-2 left-2 bg-white p-2 rounded shadow">
+            {bounds ? (
+              <>
+                <p>Max Lat: {bounds.maxLatitude.toFixed(5)}</p>
+                <p>Min Lat: {bounds.minLatitude.toFixed(5)}</p>
+                <p>Max Lng: {bounds.maxLongitude.toFixed(5)}</p>
+                <p>Min Lng: {bounds.minLongitude.toFixed(5)}</p>
+                <p>Ships: {ships.length}</p>
+              </>
+            ) : (
+              <p>Loading bounds...</p>
+            )}
+          </div>
+        </Popup>
       </Marker>
     </>
   );

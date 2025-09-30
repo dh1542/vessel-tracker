@@ -7,15 +7,18 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Image,
 } from "@heroui/react";
 import { ShipComponentProps } from "./shipComponent";
 
 export default function ShipPopUpContent(
   props: ShipComponentProps
 ): JSX.Element {
+  console.log("Rendering ShipPopUpContent with props:", props);
   return (
     <div className="w-bg-white shadow-2xs">
       <Card fullWidth={true} shadow="lg">
+        <Image alt="Ship image" src={props.imageUrl} />
         <Table>
           <TableHeader>
             <TableColumn>NAME</TableColumn>

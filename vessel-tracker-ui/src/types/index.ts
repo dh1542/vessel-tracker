@@ -27,4 +27,5 @@ export type Ship = {
   position: Position;
   heading: number;
   destination: string;
+  imageUrl: string;
 };

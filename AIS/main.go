@@ -24,6 +24,9 @@ func main() {
 	if err := postgresDB.CreatePositionReportTableIfNotExist(ctx); err != nil {
 		log.Fatal(err)
 	}
+	if err := postgresDB.CreateImagesTableIfNotExist(ctx); err != nil {
+		log.Fatal(err)
+	}
 
 	url := os.Getenv("AIS_STREAM_URL")
 	subscription := aisstream.SubscriptionMessage{

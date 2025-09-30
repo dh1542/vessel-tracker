@@ -15,6 +15,7 @@ export interface ShipComponentProps {
   position: Position;
   heading: number;
   destination?: string;
+  imageUrl?: string;
 }
 
 // React component to render the arrow shape

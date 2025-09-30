@@ -50,15 +50,17 @@ func handlePositionMessage(packet aisstream.AisStreamMessage, shipName string, c
 
 	hasImage, _ := postgresDB.HasImage(ctx, shipName)
 
-	if hasImage {
-		imageUrl := scraper.ScrapeImageUrlForShipName(shipName)
+	go func() {
+		if !hasImage {
+			imageUrl := scraper.ScrapeImageUrlForShipName(shipName)
 
-		params := generated.SetImageForShipParams{
-			ImageUrl: imageUrl,
-			ShipName: shipName,
+			params := generated.SetImageForShipParams{
+				ImageUrl: imageUrl,
+				ShipName: shipName,
+			}
+			postgresDB.SetImageForShip(ctx, params)
 		}
-		postgresDB.SetImageForShip(ctx, params)
-	}
+	}()
 
 	if err != nil {
 		log.Println("Failed to upsert position entry:", err)

@@ -85,12 +85,11 @@ ON CONFLICT (mmsi) DO UPDATE
         destination                 = EXCLUDED.destination;
 
 -- name: GetPositionData :many
-SELECT *
-FROM position_reports
-WHERE latitude BETWEEN $1 AND $2 --minLat --maxLat
-  AND longitude BETWEEN $3 AND $4;
---minLon --maxLon
-
+SELECT pr.*, i.image_url
+FROM position_reports pr
+LEFT JOIN images i ON pr.ship_name = i.ship_name
+WHERE pr.latitude BETWEEN $1 AND $2
+  AND pr.longitude BETWEEN $3 AND $4;
 
 -- name: UpdateShipDestination :exec
 UPDATE position_reports
@@ -106,4 +105,9 @@ WHERE ship_name = $1;
 -- name: SetImageForShip :exec
 INSERT INTO images(ship_name, image_url)
 VALUES ($1, $2);
+
+-- name: GetImageByShipName :one
+SELECT image_url
+FROM images
+WHERE ship_name = $1;
 

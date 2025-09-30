@@ -63,12 +63,11 @@ func GetShipsForPositionHandler(ctx context.Context, db *generated.Queries) http
 	}
 }
 
-func fetchShipsForPosition(ctx context.Context, db *generated.Queries, minLatitude, minLongitude, maxLatitude, maxLongitude float64) ([]generated.PositionReport, error) {
-	//log.Println("Fetching ships for", minLatitude, minLongitude, maxLongitude)
+func fetchShipsForPosition(ctx context.Context, db *generated.Queries, minLatitude, minLongitude, maxLatitude, maxLongitude float64) ([]generated.GetPositionDataRow, error) {
 	postionDataArgs := models.BuildGetPositionDataParams(minLatitude, minLongitude, maxLongitude, maxLatitude)
 
 	data, err := db.GetPositionData(ctx, postionDataArgs)
-	//fmt.Println(data)
+
 	if err != nil {
 		return nil, err
 	}

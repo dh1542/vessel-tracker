@@ -20,11 +20,10 @@ export const fetchShips = async (bounds: Bounds): Promise<Ship[]> => {
         },
         heading: shipData.TrueHeading,
         destination: shipData.Destination.String,
+        imageUrl: shipData.ImageUrl.String,
       };
       ships.push(ship);
-      console.log("Fetched ship: ", ship);
     });
   }
-  console.log("Total ships fetched: ", ships.length);
   return ships;
 };
