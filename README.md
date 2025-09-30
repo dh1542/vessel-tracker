@@ -12,23 +12,32 @@ ships and provides visual representation on a map.
 
 - Docker
 - Minikube
+- kubectl
 - go
 - react
 
-#### 1. Install PostgreSQL with Helm
-kubectl apply -f deployment/namespace.yaml
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
+#### 1. Install and deploy PostgreSQL
+`kubectl apply -f deployment/namespace.yaml`
 
-helm install postgres bitnami/postgresql \
--n postgres \
--f databases/postgres/postgres-values.yaml
+`helm repo add bitnami https://charts.bitnami.com/bitnami`
+`helm repo update`
 
-#### 2. Set .env with your db-secrets
+`helm install postgres bitnami/postgresql -n postgres -f databases/postgres/postgres-values.yaml`
+
+port-forward to localhost:5432:
+
+`kubectl port-forward svc/postgres-postgresql 5432:5432 -n postgres`
+
+#### 2. Deploy Go Backend
+1. Fill `/.env` with db values and api key
+2. Generate sqlc functions: `cd ./AIS/db` and then `sqlc generate`
+3. Run main: `cd ..` and `go run main.go`
 #### 3. Deploy UI
-run `npm install` and
-`npm run dev`
+`cd ./vessel-tracker-ui` and then run `npm install; npm run dev`
+#### 4. Access in browser
+Locate in your browser on http://localhost:5173/
+
 
 ## Architecture
 
