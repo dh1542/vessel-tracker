@@ -5,6 +5,30 @@ ships and provides visual representation on a map.
 ## Showcase
 ![screenshot](./docs/media/img.png "Vessel-Tracker-UI screenshot")
 
+## How to deploy
+
+### To Run Locally
+#### Prerequisites
+
+- Docker
+- Minikube
+- go
+- react
+
+#### 1. Install PostgreSQL with Helm
+kubectl apply -f deployment/namespace.yaml
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
+helm install postgres bitnami/postgresql \
+-n postgres \
+-f databases/postgres/postgres-values.yaml
+
+#### 2. Set .env with your db-secrets
+#### 3. Deploy UI
+run `npm install` and
+`npm run dev`
 
 ## Architecture
 
@@ -41,24 +65,8 @@ ships and provides visual representation on a map.
             +-----------------------+
 
 
-## How to deploy
-
-### Prerequisites
-
-- Docker
-- Minikube
-- go
-- react
 
 
-### Install PostgreSQL with Helm
-kubectl apply -f deployment/namespace.yaml
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-
-helm install postgres bitnami/postgresql \
-  -n postgres \
-  -f databases/postgres/postgres-values.yaml
 
 
