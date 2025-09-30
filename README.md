@@ -1,40 +1,53 @@
+# Vessel-Tracker
+The Vessel-Tracker is a service that uses the free AIS stream web socket (https://aisstream.io/) to fetch position data of
+ships and provides visual representation on a map. 
+
+## Showcase
+![screenshot](./docs/media/img.png "Vessel-Tracker-UI screenshot")
+
+
+## Architecture
+
             +-----------------------+
             |   AIS Stream (WS)     | (Global Firehose)
             +----------+------------+
                        |
                        v
             +----------+------------+
-            |   Ingestion Service   | (Go Service 1)
+            |   Ingestion Service   | 
             |  - Connects to WS     |
-            |  - Parses messages    |
+            |  - Parses messages    | GO
             |  - Stores in DB       |
+            |  - Scrapes for image  |
             +----------+------------+
                        |
                        v
             +----------+------------+
-            |   PostgreSQL + PostGIS| (With spatial indexing)
+            |   PostgreSQL          | 
             +----------+------------+
                        |
                        v
             +----------+------------+
-            |   REST API Service    | (Go Service 2)
-            |  - Handles HTTP GET   |
+            |   REST API Service    | 
+            |  - Handles HTTP GET   | GO
             |  - Queries DB by FOV  |
             +----------+------------+
                        |
                        v
             +----------+------------+
             |   React Frontend      |
-            |  - Polls /api/vessels |
+            |  - Polls /api/position| REACT
             |  - params: bbox       |
             +-----------------------+
 
 
-# How to deploy
-# Create namespace
+## How to deploy
+
+
+### Create namespace
 kubectl apply -f deployment/namespace.yaml
 
-# Install PostgreSQL with Helm
+### Install PostgreSQL with Helm
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
