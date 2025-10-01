@@ -5,7 +5,7 @@ jobs:
   Hello-World:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Hello, world"
+      - run: echo "Hello, world this is Actions"
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
     steps:
